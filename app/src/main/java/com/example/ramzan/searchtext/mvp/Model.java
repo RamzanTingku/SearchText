@@ -1,53 +1,45 @@
-package com.example.ramzan.searchtext;
+package com.example.ramzan.searchtext.mvp;
 
 import android.content.Context;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.Toast;
 
-import retrofit2.Call;
-
+import com.example.ramzan.searchtext.MainActivity;
+import com.example.ramzan.searchtext.SearchTextAPI;
+import com.example.ramzan.searchtext.SearchTextAdapter;
 import com.example.ramzan.searchtext.dataModel.Datum;
 import com.example.ramzan.searchtext.dataModel.Search;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends AppCompatActivity {
+public class Model {
 
-    RecyclerView recyclerView;
+    ModelInterface modelInterface;
+    Context context;
+
     SearchTextAdapter searchTextAdapter;
     ArrayList<Datum>datumArrayList;
-    Context context;
+
 
     private final String BASE_URL = "http://182.160.109.132/";
     private SearchTextAPI searchTextAPI;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    Model(ModelInterface modelInterface, Context context) {
 
-        context = MainActivity.this;
+        this.context=context;
+        this.modelInterface=modelInterface;
 
-        recyclerView = findViewById(R.id.searched_list_rv);
-        datumArrayList = new ArrayList<>();
+    }
 
-        searchTextAdapter = new SearchTextAdapter(context,datumArrayList);
-        LinearLayoutManager llm = new LinearLayoutManager(this);
-        llm.setReverseLayout(true);
-        llm.setStackFromEnd(true);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(llm);
-        recyclerView.setAdapter(searchTextAdapter);
-
+    // TODO: get mathod
+    public ArrayList<Datum> getData() {
 
         Retrofit retrofit =  new Retrofit.Builder()
                 .baseUrl(BASE_URL)
@@ -61,8 +53,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ArrayList<Search>> call, Response<ArrayList<Search>> response) {
 
-                Log.d("Test",""+response.body());
-
+                Log.d("Test", ""+response.body());
 
                 if(response.code() == 200){
 
@@ -74,10 +65,11 @@ public class MainActivity extends AppCompatActivity {
                     }
                     searchTextAdapter.notifyDataSetChanged();
 
-                    Toast.makeText(MainActivity.this, ""+searches.get(0).getData().get(0).getKey(), Toast.LENGTH_SHORT).show();
+
+                    Toast.makeText(context, ""+searches.get(0).getData().get(0).getKey(), Toast.LENGTH_SHORT).show();
 
                 }else {
-                    Toast.makeText(MainActivity.this, "Failed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show();
 
                 }
             }
@@ -85,12 +77,34 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ArrayList<Search>> call, Throwable t) {
 
-                Toast.makeText(MainActivity.this, "failed response", Toast.LENGTH_SHORT).show();
-
-                Log.d("Test",""+t.getMessage());
+                Toast.makeText(context, "failed response", Toast.LENGTH_SHORT).show();
 
             }
         });
 
+
+        return datumArrayList;
+
     }
+
+
+    // TODO: save mathod
+    void saveSData(Search search) {
+
+        boolean success = true;
+
+        if(success){
+
+            modelInterface.onStudentsDataSaveSuccess("Students data saved");
+
+        }
+
+        else {
+
+            modelInterface.onStudentDataSaveFailed("Students data save failed");
+
+        }
+
+    }
+
 }
